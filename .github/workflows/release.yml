@@ -55,7 +55,8 @@ jobs:
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
       - name: Verify universal macOS executable
         if: runner.os == 'macOS'
-        run: lipo -verify_arch x86_64 arm64 release/mac-universal/Palamedes.app/Contents/MacOS/Palamedes
+        # lipo consumes every argument after -verify_arch as an architecture, so the input must come first.
+        run: lipo release/mac-universal/Palamedes.app/Contents/MacOS/Palamedes -verify_arch x86_64 arm64
       - name: Smoke test the packaged Windows application
         if: runner.os == 'Windows'
         run: node scripts/smoke-desktop.mjs release/win-unpacked/Palamedes.exe

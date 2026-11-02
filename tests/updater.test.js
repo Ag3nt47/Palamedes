@@ -2,8 +2,13 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import path from 'node:path';
+import { TEXTBOOK_SOURCES } from '../src/lib/textbook.js';
 const require = createRequire(import.meta.url);
 const { DAY_MS, shouldCheck, initialState, transition, updateCapability, isTrustedExternalUrl, resolveAssetPath } = require('../desktop/update-policy.cjs');
+
+test('every handbook reference can open from the native application', () => {
+  for (const source of TEXTBOOK_SOURCES) assert.equal(isTrustedExternalUrl(source.url), true, source.title);
+});
 
 test('automatic update checks are limited to one attempt per 24h, including failures', () => {
   const now = 10 * DAY_MS;

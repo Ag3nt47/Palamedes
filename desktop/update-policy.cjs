@@ -15,7 +15,7 @@ function updateCapability({ platform, appImagePath, signedMacUpdates = false }) 
   if (platform === 'win32') return { automatic: true };
   if (platform === 'linux' && appImagePath) return { automatic: true };
   if (platform === 'darwin' && signedMacUpdates) return { automatic: true };
-  if (platform === 'darwin') return { automatic: false, message: 'This macOS release is unsigned, so in-app installation is disabled. Download the newest DMG or ZIP from GitHub Releases. Automatic macOS updates require a code-signed release.' };
+  if (platform === 'darwin') return { automatic: false, message: 'This macOS release does not use Developer ID signing, so in-app installation is disabled. Download the newest DMG or ZIP from GitHub Releases. Automatic macOS updates require Developer ID signing.' };
   if (platform === 'linux') return { automatic: false, message: 'Update this Linux package through your package manager or install a newer DEB from GitHub Releases. In-app updates are supported when running the AppImage edition.' };
   return { automatic: false, message: 'Download a supported desktop package from GitHub Releases or use the browser app.' };
 }
@@ -34,7 +34,7 @@ function transition(current, event) {
   throw new Error(`Update action ${event} is not allowed while ${state.status}.`);
 }
 
-const EXTERNAL_DOMAINS = ['github.com', 'github.io', 'mathjs.org', 'nerdamer.com', 'katex.org', 'projectnaptha.com', 'hpcalcs.com', 'ti.com', 'casio.com', 'casio-intl.com', 'electronjs.org', 'electron.build', 'nodejs.org', 'openai.com', 'wikipedia.org', 'openstax.org', 'khanacademy.org', 'mit.edu'];
+const EXTERNAL_DOMAINS = ['github.com', 'github.io', 'mathjs.org', 'nerdamer.com', 'katex.org', 'projectnaptha.com', 'hpcalcs.com', 'ti.com', 'casio.com', 'casio-intl.com', 'electronjs.org', 'electron.build', 'nodejs.org', 'openai.com', 'wikipedia.org', 'openstax.org', 'khanacademy.org', 'mit.edu', 'nist.gov', 'arxiv.org'];
 function isTrustedExternalUrl(raw) {
   try {
     const url = new URL(raw);
