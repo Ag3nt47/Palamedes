@@ -49,6 +49,15 @@ jobs:
       - name: Verify universal macOS executable
         if: runner.os == 'macOS'
         run: lipo -verify_arch x86_64 arm64 release/mac-universal/Palamedes.app/Contents/MacOS/Palamedes
+      - name: Smoke test the packaged Windows application
+        if: runner.os == 'Windows'
+        run: node scripts/smoke-desktop.mjs release/win-unpacked/Palamedes.exe
+      - name: Smoke test the packaged macOS application
+        if: runner.os == 'macOS'
+        run: node scripts/smoke-desktop.mjs release/mac-universal/Palamedes.app/Contents/MacOS/Palamedes
+      - name: Smoke test the packaged Linux application
+        if: runner.os == 'Linux'
+        run: xvfb-run -a node scripts/smoke-desktop.mjs release/linux-unpacked/palamedes
       - name: Verify required release artifacts
         shell: bash
         env:
@@ -80,6 +89,14 @@ jobs:
             release/latest*.yml
           if-no-files-found: error
           retention-days: 30
+      - name: Retain native smoke diagnostics on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-smoke-failure-${{ matrix.platform }}
+          path: release/desktop-smoke-failure-*.png
+          if-no-files-found: ignore
+          retention-days: 14
 
   publish:
     name: Publish complete desktop release

@@ -13,7 +13,7 @@ export default function Graphing({initialInput=''}) {
   const [revision,setRevision]=useState(0),[error,setError]=useState(''),[loading,setLoading]=useState(true),[rows,setRows]=useState([]),[showTable,setShowTable]=useState(false);
   const [analysis,setAnalysis]=useState(''),[guess,setGuess]=useState('1'),[lower,setLower]=useState('0'),[upper,setUpper]=useState('3.141592653589793');
   const plot=useRef(null), Plotly=useRef(null);
-  useEffect(()=>{let alive=true;import('plotly.js-dist-min').then(mod=>{if(alive){Plotly.current=mod.default||mod;setLoading(false);setRevision(r=>r+1)}}).catch(e=>setError(e.message));return()=>{alive=false;if(plot.current&&Plotly.current)Plotly.current.purge(plot.current)}},[]);
+  useEffect(()=>{let alive=true;const element=plot.current;import('plotly.js-dist-min').then(mod=>{if(alive){Plotly.current=mod.default||mod;setLoading(false);setRevision(r=>r+1)}}).catch(e=>setError(e.message));return()=>{alive=false;if(element&&Plotly.current)Plotly.current.purge(element)}},[]);
   useEffect(()=>{
     if(!Plotly.current||!plot.current)return;
     try{

@@ -6,9 +6,11 @@
 
 ### A place for every problem.
 
+[![Build & browser tests](https://github.com/Ag3nt47/Palamedes/actions/workflows/ci.yml/badge.svg)](https://github.com/Ag3nt47/Palamedes/actions/workflows/ci.yml) [![Security scans](https://github.com/Ag3nt47/Palamedes/actions/workflows/security.yml/badge.svg)](https://github.com/Ag3nt47/Palamedes/actions/workflows/security.yml) [![Desktop releases](https://github.com/Ag3nt47/Palamedes/actions/workflows/release.yml/badge.svg)](https://github.com/Ag3nt47/Palamedes/actions/workflows/release.yml)
+
 An open-source mathematics instrument: scientific calculator, graphing studio, symbolic engine, worked solver, AI-math lab, and programmable workspace.
 
-[**Launch the browser app**](https://ag3nt47.github.io/Palamedes/) · [**Windows downloads**](https://github.com/Ag3nt47/Palamedes/releases) · [User guide](docs/USER_GUIDE.md) · [Capabilities](docs/CAPABILITIES.md)
+[**Launch the browser app**](https://ag3nt47.github.io/Palamedes/) · [**Desktop downloads**](https://github.com/Ag3nt47/Palamedes/releases) · [User guide](docs/USER_GUIDE.md) · [Capabilities](docs/CAPABILITIES.md)
 
 ![Palamedes demonstration](docs/media/palamedes-demo.gif)
 
@@ -85,10 +87,12 @@ npm test              # mathematical, validation, isolation-policy, and syntax c
 npm run build         # production browser bundle
 npm run preview       # serve the production bundle
 npm run desktop:dev   # build and launch the Electron desktop app
-npm run package:win   # build a Windows x64 installer in release/
+npm run package:win   # Windows x64 installer in release/
+npm run package:mac   # macOS universal DMG/ZIP (on macOS)
+npm run package:linux # Linux x64 AppImage/DEB (on Linux)
 ```
 
-Browser interaction tests require a running app:
+Browser interaction tests build and serve an isolated production preview:
 
 ```sh
 npx playwright install chromium
@@ -159,7 +163,7 @@ To check while the app is closed, an end user may explicitly register the option
 
 Read the script parameters before use. This repository does not register tasks on installation or run them on your machine automatically. The helper [check-updates.ps1](scripts/check-updates.ps1) launches the installed app’s approval-based updater. Browser tabs use the published web version and cannot install desktop executables.
 
-Tagged `v*` releases build the Windows installer, blockmap, and `latest.yml` through GitHub Actions. For a new release, update `package.json` and the lockfile, commit, then push a matching tag. Code signing requires the maintainer’s own certificate; unsigned builds may trigger Windows SmartScreen.
+Tagged `v*` releases build Windows NSIS, macOS universal DMG/ZIP, and Linux AppImage/DEB installers, update metadata, and packaged-app smoke tests through GitHub Actions. Artifacts are published together after every platform succeeds. For a new release, update `package.json` and the lockfile, commit, then push a matching tag. macOS builds are ad-hoc signed, without Apple notarization; Gatekeeper may require explicit approval. Windows builds may trigger SmartScreen. Automatic updates support Windows and Linux AppImage; macOS requires a maintainer’s Developer ID signing/notarization setup, and DEB uses manual/package-manager updates. See [platform details](docs/PLATFORMS.md).
 
 ## Scope and accuracy
 

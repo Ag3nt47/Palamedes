@@ -8,6 +8,7 @@ const desktopMetadata = require('../package.json').palamedesDesktop || {};
 
 app.setName('Palamedes');
 const launchedForCheck = process.argv.includes('--check-updates');
+const smokeTest = process.env.PALAMEDES_SMOKE_TEST === '1';
 let mainWindow, server, origin, updater;
 let updateState = initialState(), checking = false, quitting = false;
 let availableInfo = null, lastAttemptAt = null, dailyTimer;
@@ -160,9 +161,11 @@ else {
     await startServer();
     await createWindow();
     await loadAttempt(); setupUpdater();
-    const result = await checkForUpdates({ quiet: true });
+    const result = smokeTest ? { status: 'smoke-test' } : await checkForUpdates({ quiet: true });
     if (launchedForCheck && !['installing'].includes(result.status)) { app.quit(); return; }
-    dailyTimer = setInterval(() => { checkForUpdates({ quiet: true }); }, Math.min(DAY_MS, 60 * 60 * 1000));
-    dailyTimer.unref();
+    if (!smokeTest) {
+      dailyTimer = setInterval(() => { checkForUpdates({ quiet: true }); }, Math.min(DAY_MS, 60 * 60 * 1000));
+      dailyTimer.unref();
+    }
   }).catch(error => { dialog.showErrorBox('Palamedes could not start', String(error?.message || error)); app.quit(); });
 }

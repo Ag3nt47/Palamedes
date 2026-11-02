@@ -8,13 +8,13 @@
     "dev": "vite --host 127.0.0.1",
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1",
-    "test": "node --test tests/*.test.js",
+    "test": "node --test --test-concurrency=1 tests/*.test.js",
     "test:e2e": "playwright test",
     "desktop": "electron .",
     "desktop:dev": "npm run build && electron .",
     "package:win": "npm run build && electron-builder --win nsis --x64 --publish never",
     "package:mac": "npm run build && electron-builder --mac dmg zip --universal --publish never",
-    "package:linux": "npm run build && electron-builder --linux AppImage deb --x64 --arm64 --publish never"
+    "package:linux": "npm run build && electron-builder --linux AppImage deb --x64 --publish never"
   },
   "dependencies": {
     "electron-updater": "^6.8.11",
@@ -103,7 +103,9 @@
         }
       ],
       "artifactName": "Palamedes-${version}-mac-${arch}.${ext}",
-      "hardenedRuntime": false
+      "hardenedRuntime": false,
+      "icon": "public/icon.png",
+      "identity": "-"
     },
     "linux": {
       "category": "Education",
@@ -111,23 +113,25 @@
         {
           "target": "AppImage",
           "arch": [
-            "x64",
-            "arm64"
+            "x64"
           ]
         },
         {
           "target": "deb",
           "arch": [
-            "x64",
-            "arm64"
+            "x64"
           ]
         }
       ],
       "artifactName": "Palamedes-${version}-linux-${arch}.${ext}",
-      "maintainer": "Ag3nt47 <Ag3nt47@users.noreply.github.com>"
+      "maintainer": "Ag3nt47 <Ag3nt47@users.noreply.github.com>",
+      "icon": "public/icon.png"
     }
   },
   "engines": {
     "node": ">=22.12"
+  },
+  "palamedesDesktop": {
+    "signedMacUpdates": false
   }
 }
