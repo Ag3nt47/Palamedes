@@ -38,7 +38,7 @@ jobs:
             runner: ubuntu-22.04
             args: --linux AppImage deb --x64
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -113,7 +113,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Derive release tag from the tested source
         id: release
         run: node -e 'const fs=require("fs"); fs.appendFileSync(process.env.GITHUB_OUTPUT,"tag=v"+require("./package.json").version+"\n");'
