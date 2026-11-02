@@ -20,7 +20,7 @@
     "electron-updater": "^6.8.11",
     "jstat": "^1.9.6",
     "katex": "^0.19.1",
-    "lucide-react": "^0.468.0",
+    "lucide-react": "^1.65.0",
     "mathjs": "^15.0.0",
     "nerdamer": "^1.1.13",
     "plotly.js-dist-min": "^3.3.0",
