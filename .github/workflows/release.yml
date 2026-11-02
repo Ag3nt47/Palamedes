@@ -76,7 +76,7 @@ jobs:
           }
           NODE
       - name: Retain platform installers and update artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Palamedes-${{ matrix.platform }}
           path: |
@@ -91,7 +91,7 @@ jobs:
           retention-days: 30
       - name: Retain native smoke diagnostics on failure
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: desktop-smoke-failure-${{ matrix.platform }}
           path: release/desktop-smoke-failure-*.png
