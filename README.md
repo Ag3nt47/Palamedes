@@ -57,7 +57,7 @@ The [capability matrix](docs/CAPABILITIES.md) distinguishes the available UI too
 
 <details><summary><strong>Worked solutions and checks</strong></summary>
 
-![Worked solution](docs/media/solver.png)
+![Worked solution](docs/media/solver-full.png)
 
 </details>
 
@@ -65,7 +65,7 @@ The [capability matrix](docs/CAPABILITIES.md) distinguishes the available UI too
 
 ![Machine learning weights](docs/media/ml-lab.png)
 ![Programming sandbox](docs/media/sandbox.png)
-![Equation handbook](docs/media/handbook.png)
+![Equation handbook](docs/media/handbook-full.png)
 
 </details>
 
