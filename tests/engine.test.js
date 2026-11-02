@@ -64,10 +64,30 @@ test('matrix arithmetic and complex matrix operations are available', () => {
   assert.deepEqual(numeric('transpose([1,2;3,4])').toArray(), [[1, 3], [2, 4]]);
   const inverse = numeric('inv([1,2;3,4])').toArray();
   near(inverse[0][0], -2); near(inverse[0][1], 1);
-  assert.deepEqual(solveLinearSystem([[2, 1], [1, -1]], [5, 1]), [2, 1]);
-  assert.deepEqual(solveLinearSystem([[1e-20, 0], [0, 1e-20]], [2e-20, 3e-20]), [2, 3]);
+  solveLinearSystem([[2, 1], [1, -1]], [5, 1]).forEach((value,i) => near(value,[2,1][i],1e-12));
   assert.throws(() => solveLinearSystem([[1, 2], [2, 4]], [1, 2]), /Linear solve:/);
   assert.throws(() => solveLinearSystem([[1, 2]], [1]), /square/);
+});
+
+test('linear systems preserve solutions under tiny, huge and mixed equation scales', () => {
+  const base = [[2,1],[1,-1]], rhs = [5,1], expected = [2,1];
+  for (const scales of [[1e-200,1e-200],[1e200,1e200],[1e-200,1e200],[1e200,1e-200]]) {
+    const A = base.map((row,i) => row.map(value => value*scales[i]));
+    const b = rhs.map((value,i) => value*scales[i]);
+    const solution = solveLinearSystem(A,b);
+    solution.forEach((value,i) => near(value,expected[i],1e-12));
+    A.forEach((row,i) => near(row.reduce((sum,value,j)=>sum+value*solution[j],0)/b[i],1,1e-12));
+  }
+  assert.deepEqual(solveLinearSystem([[2e-20,0],[0,3e-20]],[4e-20,9e-20]),[2,3]);
+  assert.deepEqual(solveLinearSystem([[2e200,0],[0,3e200]],[4e200,9e200]),[2,3]);
+  const pivoted = solveLinearSystem([[0,1e-20],[1e200,1e200]],[3e-20,5e200]);
+  near(pivoted[0],2,1e-12); near(pivoted[1],3,1e-12);
+  const tinyComponent = solveLinearSystem([[1,0],[0,1]],[1e-20,1]);
+  near(tinyComponent[0]/1e-20,1,1e-12);
+  near(tinyComponent[1],1);
+  assert.deepEqual(solveLinearSystem([[1,0],[0,1]],[0,0]),[0,0]);
+  assert.throws(()=>solveLinearSystem([[1e-200,2e-200],[2e200,4e200]],[1e-200,2e200]),/singular|ill-conditioned/);
+  assert.throws(()=>solveLinearSystem([[1,1],[1,1+Number.EPSILON]],[2,2]),/ill-conditioned/);
 });
 
 test('symbolic algebra expansion, factoring and rational simplification preserve values', () => {

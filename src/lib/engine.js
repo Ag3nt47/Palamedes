@@ -345,16 +345,47 @@ export function solveODE(expression, x0, y0, end, h = 0.05) {
 export function solveLinearSystem(A, b) {
   if (!Array.isArray(A) || !A.length || !A.every(row => Array.isArray(row) && row.length === A.length)) throw new Error('A must be a nonempty square matrix.');
   if (!Array.isArray(b) || b.length !== A.length) throw new Error('The right-hand side must have one value per matrix row.');
-  A.forEach(row => row.forEach(value => finite(value, 'Matrix entry')));
+  A = A.map(row => row.map(value => finite(value, 'Matrix entry')));
   const rhs = b.map(value => finite(Array.isArray(value) ? value[0] : value, 'Right-hand side entry'));
   try {
-    const decomposition = math.lup(A);
+    // Equilibrate each equation before decomposition: a change of measurement
+    // units must not turn a well-conditioned system into a zero matrix.
+    const rowScales = A.map(row => Math.max(...row.map(Math.abs)));
+    if (rowScales.some(scale => scale === 0)) throw new Error('The matrix is singular.');
+    const normalizedA = A.map((row, i) => row.map(value => value / rowScales[i]));
+    const normalizedRhs = rhs.map((value, i) => finite(value / rowScales[i], 'Scaled right-hand side'));
+    const decomposition = math.lup(normalizedA);
     const upper = decomposition.U;
     const pivotScale = Math.max(...upper.flat().map(Math.abs));
     if (upper.some((row, i) => Math.abs(row[i]) <= Number.EPSILON * pivotScale * A.length * 10)) throw new Error('The matrix is singular or numerically ill-conditioned.');
-    const solution = math.lusolve(A, rhs).map(row => finite(row[0], 'Solution'));
-    const residual = A.map((row, i) => Math.abs(row.reduce((sum, value, j) => sum + value * solution[j], 0) - rhs[i]));
-    if (Math.max(...residual) > 1e-7 * Math.max(1, ...rhs.map(Math.abs))) throw new Error('The matrix is singular or numerically ill-conditioned.');
+
+    // mathjs triangular solvers apply an absolute near-zero test to RHS values.
+    // Explicit substitution preserves a valid tiny component such as 1e-20 in
+    // an otherwise unit-scale solution. Scale the RHS first to avoid overflow.
+    const rhsScale = Math.max(...normalizedRhs.map(Math.abs)) || 1;
+    const scaledRhs = normalizedRhs.map(value => value / rhsScale);
+    if (scaledRhs.some((value, i) => value === 0 && normalizedRhs[i] !== 0)) throw new Error('The system exceeds floating-point dynamic range. Rescale the unknowns.');
+    const forward = Array(A.length).fill(0), backward = Array(A.length).fill(0);
+    for (let i = 0; i < A.length; i++) {
+      let value = scaledRhs[decomposition.p[i]];
+      for (let j = 0; j < i; j++) value -= decomposition.L[i][j] * forward[j];
+      forward[i] = finite(value / decomposition.L[i][i], 'Forward substitution');
+    }
+    for (let i = A.length - 1; i >= 0; i--) {
+      let value = forward[i];
+      for (let j = i + 1; j < A.length; j++) value -= upper[i][j] * backward[j];
+      backward[i] = finite(value / upper[i][i], 'Back substitution');
+    }
+    const solution = backward.map(value => finite(value * rhsScale, 'Solution'));
+    const solutionScale = Math.max(...solution.map(Math.abs));
+    normalizedA.forEach((row, i) => {
+      const scale = Math.max(solutionScale, Math.abs(normalizedRhs[i])) || 1;
+      const terms = row.map((value, j) => value * (solution[j] / scale));
+      const target = normalizedRhs[i] / scale;
+      const residual = Math.abs(terms.reduce((sum, value) => sum + value, 0) - target);
+      const magnitude = terms.reduce((sum, value) => sum + Math.abs(value), Math.abs(target));
+      if (residual > 1e-10 * magnitude) throw new Error('The system failed its relative residual check. Rescale the unknowns or use higher precision.');
+    });
     return solution;
   } catch (error) { fail(error, 'Linear solve'); }
 }

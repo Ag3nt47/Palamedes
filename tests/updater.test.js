@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 const require = createRequire(import.meta.url);
-const { DAY_MS, shouldCheck, initialState, transition, isTrustedExternalUrl, resolveAssetPath } = require('../desktop/update-policy.cjs');
+const { DAY_MS, shouldCheck, initialState, transition, updateCapability, isTrustedExternalUrl, resolveAssetPath } = require('../desktop/update-policy.cjs');
 
 test('automatic update checks are limited to one attempt per 24h, including failures', () => {
   const now = 10 * DAY_MS;
@@ -12,6 +12,14 @@ test('automatic update checks are limited to one attempt per 24h, including fail
   assert.equal(shouldCheck(now, now + DAY_MS), true);
   assert.equal(shouldCheck(now + DAY_MS, now), false, 'clock rollback must not cause a repeated automatic check');
   assert.equal(shouldCheck(now, now, true), true, 'explicit manual check bypasses the daily interval');
+});
+
+test('native updating is offered only for update-capable installed formats', () => {
+  assert.equal(updateCapability({ platform: 'win32' }).automatic, true);
+  assert.equal(updateCapability({ platform: 'linux', appImagePath: '/home/user/Palamedes.AppImage' }).automatic, true);
+  assert.equal(updateCapability({ platform: 'linux' }).automatic, false, 'a DEB uses package-manager/manual updates');
+  assert.equal(updateCapability({ platform: 'darwin' }).automatic, false, 'unsigned macOS packages must not offer an impossible install');
+  assert.equal(updateCapability({ platform: 'darwin', signedMacUpdates: true }).automatic, true);
 });
 
 test('installation requires explicit approval followed by a completed download', () => {

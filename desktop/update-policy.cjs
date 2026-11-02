@@ -11,6 +11,15 @@ function shouldCheck(lastAttemptAt, now = Date.now(), manual = false) {
 
 function initialState() { return { status: 'idle', approved: false, downloaded: false }; }
 
+function updateCapability({ platform, appImagePath, signedMacUpdates = false }) {
+  if (platform === 'win32') return { automatic: true };
+  if (platform === 'linux' && appImagePath) return { automatic: true };
+  if (platform === 'darwin' && signedMacUpdates) return { automatic: true };
+  if (platform === 'darwin') return { automatic: false, message: 'This macOS release is unsigned, so in-app installation is disabled. Download the newest DMG or ZIP from GitHub Releases. Automatic macOS updates require a code-signed release.' };
+  if (platform === 'linux') return { automatic: false, message: 'Update this Linux package through your package manager or install a newer DEB from GitHub Releases. In-app updates are supported when running the AppImage edition.' };
+  return { automatic: false, message: 'Download a supported desktop package from GitHub Releases or use the browser app.' };
+}
+
 /** There is deliberately no transition from available/downloaded straight to
  * installation without the approval recorded in this process/session. */
 function transition(current, event) {
@@ -42,4 +51,4 @@ function resolveAssetPath(root, requestPath) {
   return relative.startsWith('..') || path.isAbsolute(relative) ? null : target;
 }
 
-module.exports = { DAY_MS, shouldCheck, initialState, transition, isTrustedExternalUrl, resolveAssetPath };
+module.exports = { DAY_MS, shouldCheck, initialState, transition, updateCapability, isTrustedExternalUrl, resolveAssetPath };

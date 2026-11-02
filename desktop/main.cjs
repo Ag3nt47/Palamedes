@@ -3,7 +3,8 @@ const http = require('node:http');
 const fs = require('node:fs');
 const fsp = require('node:fs/promises');
 const path = require('node:path');
-const { DAY_MS, shouldCheck, initialState, transition, isTrustedExternalUrl, resolveAssetPath } = require('./update-policy.cjs');
+const { DAY_MS, shouldCheck, initialState, transition, updateCapability, isTrustedExternalUrl, resolveAssetPath } = require('./update-policy.cjs');
+const desktopMetadata = require('../package.json').palamedesDesktop || {};
 
 app.setName('Palamedes');
 const launchedForCheck = process.argv.includes('--check-updates');
@@ -94,6 +95,8 @@ function setupUpdater() {
 async function checkForUpdates({ manual = false, quiet = true } = {}) {
   if (checking) return { status: 'busy', message: 'An update check or download is already running.' };
   if (!app.isPackaged) return { status: 'development', message: 'Updates are available in an installed release build. Development builds do not update themselves.' };
+  const capability = updateCapability({ platform: process.platform, appImagePath: process.env.APPIMAGE, signedMacUpdates: desktopMetadata.signedMacUpdates === true });
+  if (!capability.automatic) return { status: 'manual', message: capability.message, url: 'https://github.com/Ag3nt47/Palamedes/releases' };
   if (!updater) return { status: 'starting', message: 'Palamedes is still starting. Try checking again in a moment.' };
   const now = Date.now();
   if (!shouldCheck(lastAttemptAt, now, manual)) return { status: 'skipped', message: 'An automatic check was already attempted within the last 24 hours.' };
@@ -132,7 +135,7 @@ async function checkForUpdates({ manual = false, quiet = true } = {}) {
     return { status: 'installing', message: 'Installing the approved update and restarting Palamedes.' };
   } catch (error) {
     updateState = transition(updateState, 'error');
-    const message = 'Could not check or apply the update. A published GitHub release must include its installer, latest.yml, and blockmap. Your current installation remains usable. Try again later.';
+    const message = 'Could not check or apply the update. A published GitHub release must include the platform installer/archive and matching latest*.yml update metadata. Your current installation remains usable. Try again later.';
     if (!quiet && !quitting && mainWindow && !mainWindow.isDestroyed()) await dialog.showMessageBox(mainWindow, { type: 'info', title: 'Palamedes updates', message, detail: String(error?.message || error).slice(0, 500), buttons: ['OK'] });
     return { status: 'error', message };
   } finally {
@@ -143,7 +146,7 @@ async function checkForUpdates({ manual = false, quiet = true } = {}) {
 
 if (!app.requestSingleInstanceLock()) app.quit();
 else {
-  app.setAppUserModelId('io.github.ag3nt47.palamedes');
+  if (process.platform === 'win32') app.setAppUserModelId('io.github.ag3nt47.palamedes');
   app.on('second-instance', (_event, argv) => { if (argv.includes('--check-updates')) checkForUpdates({ quiet: true }); else showWindow(); });
   app.on('before-quit', () => { quitting = true; if (updateState.status !== 'installing') updateState = transition(updateState, 'cancel'); clearInterval(dailyTimer); });
   app.on('window-all-closed', () => app.quit());

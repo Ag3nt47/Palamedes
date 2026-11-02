@@ -38,7 +38,7 @@ export default function App(){
   const active=TABS.find(t=>t.id===tab),CurrentIcon=active.icon;
   useEffect(()=>{const t=setTimeout(()=>setPower('on'),1050);return()=>clearTimeout(t)},[]);
   useEffect(()=>{const fn=e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();command.current?.focus()};if(e.key==='Escape'){setSettings(false);setModePicker(false);setMobileNav(false)}};window.addEventListener('keydown',fn);return()=>window.removeEventListener('keydown',fn)},[]);
-  useEffect(()=>writeStorage('modules',modules),[modules]);useEffect(()=>writeStorage('advanced',advanced),[advanced]);useEffect(()=>writeStorage('angle',angle),[angle]);useEffect(()=>writeStorage('skin',skin),[skin]);useEffect(()=>writeStorage('backlight',backlight),[backlight]);useEffect(()=>writeStorage('brightness',brightness),[brightness]);
+  useEffect(()=>{writeStorage('modules',modules)},[modules]);useEffect(()=>{writeStorage('advanced',advanced)},[advanced]);useEffect(()=>{writeStorage('angle',angle)},[angle]);useEffect(()=>{writeStorage('skin',skin)},[skin]);useEffect(()=>{writeStorage('backlight',backlight)},[backlight]);useEffect(()=>{writeStorage('brightness',brightness)},[brightness]);
   useEffect(()=>{if(!toast)return;const t=setTimeout(()=>setToast(''),5000);return()=>clearTimeout(t)},[toast]);
   function navigate(next,input=''){
     if(!TABS.some(t=>t.id===next))next='calculator';
